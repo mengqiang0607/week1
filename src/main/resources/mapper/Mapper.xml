@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间 namespace 全球唯一 包 -->
+<mapper namespace="com.mq.mapper.GoodsMapper">
+
+	<resultMap type="Goods" id="rm">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="ename" property="ename" />
+		<result column="size" property="size" />
+		<result column="price" property="price" />
+		<result column="counts" property="counts" />
+		<result column="message" property="message" />
+		<result column="img" property="img" />
+
+		<association property="brand" javaType="Brand">
+			<id column="bid" property="bid" />
+			<result column="bname" property="bname" />
+		</association>
+	</resultMap>
+
+	<select id="selectAll" resultMap="rm">
+		select * from(SELECT g.*,b.bname FROM goods
+		AS g JOIN brand AS b ON
+		g.`bid`=b.`bid`) tt
+		<where>
+			<if test="name!=null and name!=''">
+				name like '%${name}%'
+			</if>
+		</where>
+	</select>
+
+	<select id="selectBrand" resultType="Brand">
+		select * from brand
+	</select>
+	<select id="selectGoodsKind" resultType="GoodsKind">
+		select * from goodsKind
+	</select>
+
+	<insert id="insertGoods" parameterType="Goods">
+		insert
+		goods(name,ename,size,price,counts,message,img,bid)
+		values(#{name},#{ename},#{size},#{price},#{counts},#{message},#{img},#{brand.bid})
+	</insert>
+
+	<select id="selectOne" resultMap="rm" parameterType="int">
+		SELECT
+		g.*,b.bid FROM goods
+		AS g JOIN brand AS b ON
+		g.bid=b.bid where
+		g.id=#{id}
+	</select>
+
+	<update id="updateGoods" parameterType="Goods">
+		update goods set
+		name=#{name},
+		ename=#{ename},
+		size=#{size},
+		price=#{price},
+		counts=#{counts},
+		message=#{message},
+		img=#{img},
+		bid=#{brand.bid} where
+		id=#{id}
+	</update>
+	
+	<delete id="delsGoods" parameterType="map">
+		delete from goods
+		<where>
+			<if test="ids!=null and ids.length>0">
+				<foreach collection="ids" open="id in(" close=")" separator="," item="aa">
+					#{aa}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+	
+	<delete id="deleteOneGoods" parameterType="int">
+		delete from goods where id=#{id}
+	</delete>
+</mapper>
